@@ -17,12 +17,12 @@ class Review(models.Model):
         # We are saying if a destination is deleted, the review for the destination should also be deleted.
         on_delete=models.CASCADE
     )
-    # user = models.ForeignKey(
-    # "users.User",
-    # related_name="users",
-    # on_delete=models.CASCADE
-    # )
+    owner = models.ForeignKey(
+        'jwt_auth.User',
+        related_name='reviews',
+        on_delete=models.CASCADE
+    )
 
-
-def __str__(self):
-    return f"{self.description} ({self.created_at})"
+    def __str__(self):
+        return f"{self.description} {self.text}"
+        # return f"{self.description} ({self.created_at})"

@@ -8,10 +8,12 @@ from .models import Destination
 from .serializers.common import DestinationSerializer
 from .serializers.populated import PopulatedDestinationSerializer
 
-# views
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 
 
 class DestinationListView(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, _request):
         destinations = Destination.objects.all()
@@ -33,7 +35,7 @@ class DestinationListView(APIView):
             # If validation fails, return the errors is_valid adds to serilized data
             return Response({"detail": str(e)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except AssertionError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response({"detail": serialized_data.errors}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except:
             return Response(
                 {"detail": "Unprocessable Entity"},

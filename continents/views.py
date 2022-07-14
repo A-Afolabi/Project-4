@@ -5,10 +5,14 @@ from rest_framework.exceptions import NotFound
 from django.core.exceptions import ValidationError
 
 from .models import Continent
-from .serializers import ContinentSerializer
+from .serializers.common import ContinentSerializer
+from .serializers.populated import PopulatedContinentSerializer
+
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 class ContinentListView(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, request):
         continents = Continent.objects.all()
@@ -46,12 +50,10 @@ class ContinentDetailView(APIView):
     def get(self, _request, pk):
         try:
             continent = Continent.objects.get(pk=pk)
-            serialized_continent = ContinentSerializer(continent)
+            serialized_continent = PopulatedContinentSerializer(continent)
             return Response(serialized_continent.data, status=status.HTTP_200_OK)
         except Continent.DoesNotExist:
             raise NotFound(detail="Continent not found")
-
-        return Response('Success', status=status.HTTP_200_OK)
 
     def delete(self, _request, pk):
         continent = self.get_continent(pk=pk)
@@ -68,3 +70,7 @@ class ContinentDetailView(APIView):
             return Response(serialized_continent.data, status=status.HTTP_202_ACCEPTED)
         except:
             return Response("Unprocessable Entity", status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+# class ContinentDestinationView(APIView):
+#     def get(self, _request, pk):

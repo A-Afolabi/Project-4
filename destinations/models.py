@@ -10,10 +10,11 @@ class Destination(models.Model):
     ability_level = models.CharField(max_length=20, default=None)
     image = models.CharField(max_length=500, default=None)
     background_image = models.CharField(max_length=500, default=None)
-    description = models.CharField(max_length=500, default=None)
+    description = models.CharField(max_length=1000, default=None)
     tags = models.ManyToManyField(
         "tags.Tag",
-        related_name="destinations"
+        related_name="destinations", 
+        default=None
     )
 
     continent = models.ForeignKey(

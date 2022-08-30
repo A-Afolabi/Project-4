@@ -15,13 +15,14 @@ const DestinationPage = () => {
   const [destination, setDestination] = useState(null)
   const [hasError, setHasError] = useState({ error: false, message: '' })
   // const [currentUser, setCurrentUser] = useState()
-  const [reviewInput, setReviewInput] = useState({
-    text: ''
-  })
 
-  // const { id } = useParams()
   const { destinationId } = useParams()
-  // console.log(destinationId)
+
+  const [reviewInput, setReviewInput] = useState({
+    description: '',
+    text: '',
+    destination: parseInt(destinationId)
+  })
 
   useEffect(() => {
     const getSingleDestination = async () => {
@@ -49,31 +50,31 @@ const DestinationPage = () => {
   //   getCurrentUser()
   // }, [destination])
 
-  const handleReviewInputChange = (e) => {
-    setReviewInput({ ...reviewInput, description: e.target.value, text: e.target.value })
-  }
+
 
   const handleReviewSubmit = async () => {
     !userIsAuthenticated() && navigate('/login')
     try {
-      await axios.post(`/api/reviews/`, reviewInput, {
-        header: {
-          Authorization: `Bearer ${getTokenFromLocalStorage()}`
+      await userIsAuthenticated()
+      const token = await getTokenFromLocalStorage()
+      const reviewData = { ...reviewInput, destination: parseInt(destinationId) }
+      await axios.post(`/api/reviews/`, {
+        ...reviewData,
+      }, {
+        headers: {
+          Authentication: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      })
-      console.log(getTokenFromLocalStorage)
+      }).catch((error) => console.log(error))
       const { data } = await axios.get(`/api/destinations/${destinationId}/`)
-      setReviewInput(data)
-      document.getElementById('text-to-reset').value = ''
-      setReviewInput({
-        description: '',
-        text: ''
-      })
+      setDestination(data)
+      const reviewInputToReset = document.querySelectorAll('textarea')
+      reviewInputToReset.forEach((input) => input.value = '')
+      setReviewInput({ text: '', description: '', destination: destinationId })
     } catch (error) {
       console.log(error)
     }
   }
-
 
   return (
     <Container>
@@ -103,7 +104,7 @@ const DestinationPage = () => {
               <hr />
               <Col>
                 <div className="description">
-                  <h5>Descripton: </h5>
+                  <h4>Descripton: </h4>
                   <p>{destination.description}</p>
                 </div>
               </Col>
@@ -131,10 +132,10 @@ const DestinationPage = () => {
               <div className="reviews">
                 <h4>Reviews</h4>
                 <div className="descrip">
-                  <textarea rows='1' cols='1' maxLength='30' placeholder='Review Description' onChange={handleReviewInputChange} id='text-to-reset'></textarea>
+                  <textarea rows='1' cols='1' maxLength='30' placeholder='Review Description' onChange={(e) => setReviewInput({ ...reviewInput, description: e.target.value })} id='text-to-reset'></textarea>
                 </div>
                 <div className="comments">
-                  <textarea rows='5' cols='30' maxLength='300' placeholder='How was your holiday?' onChange={handleReviewInputChange} id='text-to-reset'></textarea>
+                  <textarea rows='5' cols='30' maxLength='300' placeholder='How was your holiday?' onChange={(e) => setReviewInput({ ...reviewInput, text: e.target.value })} id='text-to-reset'></textarea>
                 </div>
                 <div className='submit-btn'>
                   <button id='s-btn' onClick={handleReviewSubmit}>Submit</button>
@@ -151,7 +152,7 @@ const DestinationPage = () => {
                     )}
                 </div>
               </div>
-              <hr />
+              {/* <hr /> */}
             </Row>
             <Row>
               <div className="enquire" variant="success">
